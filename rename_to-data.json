@@ -1,0 +1,16 @@
+{
+    "user": {
+        "csrf_token": "don't touch!",
+        "email": "your@email.com",
+        "password": "yourRLGaragePass",
+        "submit": "Go",
+        "rememberme": "on"
+    },
+    "profile": {
+        "username": "auto",
+        "trades_url": "auto"
+    },
+    "trades": {
+        
+    }
+}
