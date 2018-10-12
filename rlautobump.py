@@ -1,4 +1,4 @@
-import requests, json, time, urllib
+import requests, json, time, urllib, sys
 from datetime import datetime, timedelta
 from random import randint
 from bs4 import BeautifulSoup 
@@ -88,7 +88,7 @@ def login(session, user):
             print('Status: %d. Logged in!' %status)
             break
         else:
-            print('Something went wrong. Status code: ',status,'. Retrying after 60 sec..')
+            print('Something went wrong. Status code: %d. Retrying after 60 sec..' %status)
             time.sleep(60)
             continue
 
@@ -150,7 +150,7 @@ def sniffTrades(session, storage):
                 "There is no trades in %s's profile." %profile['username'],
                 "\nYou need to add one before bumping."
                 )
-            input("Press ENTER when you are ready to continue..")
+            input("Press ENTER when you are ready to check again..")
             continue
         
         print("Hubble's active trades: %s" %n)
@@ -209,12 +209,12 @@ def sniffTrade(session, trade_id):
     url = 'https://rocket-league.com/trade/edit?trade=' + trade_id
     
     try:
-        print('\nTrying to get %s edit trade page..' %trade_id)
+        print('\nTrying to get [%s] edit trade page..' %trade_id)
         result = session.get(url)
     except requests.exceptions.RequestException:
         requestExceptionInfo('find_csrf')
         return
-    print('All good! Currently on trade %s.' %trade_id)
+    print('All good! Currently on trade [%s].' %trade_id)
 
     try:
         soup = BeautifulSoup(result.content, 'html.parser')
@@ -228,7 +228,10 @@ def sniffTrade(session, trade_id):
         their_items = soup.find(id='rlg-theiritems') \
             .find_all('div', attrs={'class': 'rlg-trade-display-item'})
     except:
-        print('Error while reading trade data. Already edited?')
+        print(
+            'Error while reading trade data. Already edited?',
+            '\nMoving to the next one..'
+            )
         return
     
     for item in your_items:
@@ -298,7 +301,7 @@ def sniffTrade(session, trade_id):
 def bumpAll(session, trades):
     for key in reversed(list(trades.keys())):
         trade = trades[key]
-        
+
         if not iseditable(trade):
             print('\nAll trades alredy bumped.')
             
@@ -309,15 +312,15 @@ def bumpAll(session, trades):
             else:
                 sleep_time = 60
             exp_time = datetime.now() + timedelta(seconds=sleep_time)
-            print(
+            print(  #move sleep part to main()
                 'Refreshing after {:.1f} min sleep.'.format(sleep_time/60),
-                ' Expected refresh time: {}'.format(exp_time.time().strftime('%H:%M:%S'))
+                'Expected refresh time: {}'.format(exp_time.time().strftime('%H:%M:%S'))
                 )
             time.sleep(sleep_time)
             return
         
-        if not trade['bump']:
-            print('\nTrade (%s) bump param is set to False. Skipping..' %key)
+        if not trade['bump'] and not 'all-once-mode' in sys.argv:
+            print('\nTrade [%s] bump param is set to False. Skipping..' %key)
             continue
         
         url = "https://rocket-league.com/functions/editTrade.php"
@@ -366,20 +369,20 @@ def bumpAll(session, trades):
                 text = popup.p.string
                 if title:
                     print(
-                        '\nThere is an %s while bumping trade (%s).' %(title,key),
+                        '\nThere is an %s while bumping trade [%s].' %(title,key),
                         '\nError message: %s' %text,
                         '\nSleeping from 10 to 20 sec.'
                         )
             except AttributeError:
                 if result.status_code == 200:
                     print(
-                        '\nSuccesfully bumped trade (%s).' %key,
+                        '\nSuccesfully bumped trade [%s].' %key,
                         'Status: %d' %result.status_code,
                         '\nSleeping from 10 to 20 sec.',
                     )
                 else:
                     print(
-                        '\nSomething went wrong while bumping trade (%s).' %key,
+                        '\nSomething went wrong while bumping trade [%s].' %key,
                         'Sleeping from 10 to 20 sec.'
                     )
             randSleep()
@@ -388,6 +391,7 @@ def main():
     storage = Storage()
     s = requests.Session()
     first_start = True
+    
     try:
         login(s, storage.data['user'])
         storage.data["profile"] = sniffProfile(s, storage.data['user'])
@@ -399,6 +403,9 @@ def main():
                 storage.updateData()
                 first_start = False
             bumpAll(s, storage.data['trades'])
+            if 'all-once-mode' in sys.argv:
+                print('\nAll in once mode finished bumping.')
+                return
     
     except KeyboardInterrupt:
         print('KeyboardInterrupt raised - forcing exit..')
