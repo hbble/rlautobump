@@ -190,7 +190,7 @@ def sniffTrades(session, storage):
 def iseditable(trade):
     n = trade['posted'][0]
     label = trade['posted'][1]
-
+    
     if label == 'second' or (label == 'minute' and n < 16):
         return False
     else:
@@ -319,7 +319,12 @@ def bumpAll(session, trades):
             time.sleep(sleep_time)
             return
         
-        if not trade['bump'] and not 'all-once-mode' in sys.argv:
+        all_once_mode = 'all-once-mode' in sys.argv
+        inverse_mode = 'inverse-mode' in sys.argv
+        bumpable = trade['bump']
+        if inverse_mode:
+            bumpable = not trade['bump']
+        if not bumpable and not all_once_mode:
             print('\nTrade [%s] bump param is set to False. Skipping..' %key)
             continue
         
@@ -388,6 +393,13 @@ def bumpAll(session, trades):
             randSleep()
 
 def main():
+    allowed_modes = ['all-once-mode', 'inverse-mode']
+    if len(sys.argv) > 1 and sys.argv[1] not in allowed_modes:
+        print('\nError:\n\tUnknown mode in argv.')
+        return
+    elif len(sys.argv) > 2:
+        print('\nnError:\n\tOnly one mode allowed at the same time.')
+        return
     storage = Storage()
     s = requests.Session()
     first_start = True
