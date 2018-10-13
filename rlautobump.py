@@ -31,9 +31,9 @@ class Bumper:
     session = requests.Session()
     allowed_modes = ['all-once-mode', 'inverse-mode']
 
-    def randsleep(self, start, end):
+    def randsleep(self, start, end, message='then retrying'):
         r = randint(start, end)
-        print('Sleeping for %s sec then retrying..' %r)
+        print('Sleeping for %s sec %s..' %(r,message))
         time.sleep(r)
 
     def requestExceptionInfo(self, where):
@@ -93,16 +93,22 @@ class Bumper:
         
             status = result.status_code
             if 200 <= status < 300:
-                soup = BeautifulSoup(result.content, 'html.parser')
-                error = soup.find('p', attrs={'class': 'rlg-site-popup__text'}).string
-                if error is None:
-                    print('No errors found. Status: %d. Logged in!' %status)
-                    break
-                else:
-                    print('\nError:\n\tYour email and password is not correct.')
-                    input('\tCheck it on data.json file and press ENTER to retry:')
-                    self.storage.updateStorage()
+                try:
+                    soup = BeautifulSoup(result.content, 'html.parser')
+                    error = soup.find('p', attrs={'class': 'rlg-site-popup__text'}).string
+                except AttributeError:
+                    print('Something went wrong. Retrying after 60 sec..')
+                    time.sleep(60)
                     continue
+                else:
+                    if error is None:
+                        print('No errors found. Status: %d. Logged in!' %status)
+                        break
+                    else:
+                        print('\nError:\n\tYour email and password is not correct.')
+                        input('\tCheck it on data.json file and press ENTER to retry:')
+                        self.storage.updateStorage()
+                        continue
             else:
                 print('Something went wrong. Status code: %d. Retrying after 60 sec..' %status)
                 time.sleep(60)
@@ -359,8 +365,6 @@ class Bumper:
             url = "https://rocket-league.com/functions/editTrade.php"
             ref_url = 'https://rocket-league.com/trade/edit?trade='
             cookie = {'acceptedPrivacyPolicy': '2.0'}
-            
-            randSleep = lambda: time.sleep(randint(10,21))
 
             try:
                 form_data = self.sniffTrade(key)
@@ -392,23 +396,18 @@ class Bumper:
             except requests.exceptions.RequestException as e:
                 print(e)
                 self.requestExceptionInfo('bumpAll')
-                print('\nRefreshing trades and retrying.')
-                randSleep()
+                self.randsleep(10,21,'then refreshing trades and retrying')
                 return -1
             else:
                 if result.status_code == 200:
                     print(
                         '\nSuccesfully bumped trade [%s].' %key,
-                        'Status: %d' %result.status_code,
-                        '\nSleeping from 10 to 20 sec.',
+                        'Status: %d' %result.status_code
                     )
-                    randSleep()
+                    self.randsleep(10,21,'then refreshing trades and retrying')
                 else:
-                    print(
-                        '\nSomething went wrong while bumping trade [%s].' %key,
-                        '\nSleeping from 10 to 20 sec. Then refreshing trades.'
-                    )
-                    randSleep()
+                    print('\nSomething went wrong while bumping trade [%s].' %key)
+                    self.randsleep(10,21,'then refreshing trades and retrying')
                     return -1
 
     def start(self):
