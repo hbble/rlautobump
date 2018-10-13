@@ -52,7 +52,7 @@ class Bumper:
             try:
                 result = self.session.get(url)
             except requests.exceptions.RequestException:
-                requestExceptionInfo('find_csrf')
+                self.requestExceptionInfo('find_csrf')
                 continue
 
             soup = BeautifulSoup(result.content, 'html.parser')
@@ -60,7 +60,7 @@ class Bumper:
                 contact = soup.find('form', attrs={'action': '/functions/contactForm.php'})
                 token = contact.input['value']
             except AttributeError:
-                attributeExceptionInfo('find_csrf')
+                self.attributeExceptionInfo('find_csrf')
                 continue
 
             if token == None:
@@ -88,7 +88,7 @@ class Bumper:
                     cookies=cookie
                 )
             except requests.exceptions.RequestException:
-                requestExceptionInfo('login')
+                self.requestExceptionInfo('login')
                 continue
         
             status = result.status_code
@@ -120,7 +120,7 @@ class Bumper:
             try:
                 result = self.session.get(root_url, cookies=cookie)
             except requests.exceptions.RequestException:
-                requestExceptionInfo('sniffProfile')
+                self.requestExceptionInfo('sniffProfile')
                 continue
             soup = BeautifulSoup(result.content, 'html.parser')
             
@@ -130,7 +130,7 @@ class Bumper:
                 username = user_menu.find('span').string
                 trades_url = root_url + '/trades/' + username
             except AttributeError:
-                attributeExceptionInfo('sniffProfile')
+                self.attributeExceptionInfo('sniffProfile')
                 print('Trying to log in again..')
                 self.login()
                 continue
