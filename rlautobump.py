@@ -347,8 +347,8 @@ class Bumper:
                 time.sleep(sleep_time)
                 return 0
             
-            all_once_mode = allowed_modes[0] in sys.argv
-            inverse_mode = allowed_modes[1] in sys.argv
+            all_once_mode = self.allowed_modes[0] in sys.argv
+            inverse_mode = self.allowed_modes[1] in sys.argv
             bumpable = trade['bump']
             if inverse_mode:
                 bumpable = not trade['bump']
@@ -427,12 +427,12 @@ class Bumper:
             while(True):
                 self.storage.data["trades"] = self.sniffTrades()
                 self.storage.uploadData()
-                if first_start and not allowed_modes[0] in sys.argv:
+                if first_start and not self.allowed_modes[0] in sys.argv:
                     input("\nTrades updated. Press ENTER to start bumping..")
                     self.storage.updateStorage()
                     first_start = False
                 status = self.bumpAll()
-                if allowed_modes[0] in sys.argv and status == 0:
+                if self.allowed_modes[0] in sys.argv and status == 0:
                     print('\nAll in once mode finished bumping.')
                     return
         
