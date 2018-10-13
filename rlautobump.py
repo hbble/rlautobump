@@ -97,8 +97,7 @@ class Bumper:
                     soup = BeautifulSoup(result.content, 'html.parser')
                     error = soup.find('p', attrs={'class': 'rlg-site-popup__text'}).string
                 except AttributeError:
-                    print('Something went wrong. Retrying after 60 sec..')
-                    time.sleep(60)
+                    self.attributeExceptionInfo('login')
                     continue
                 else:
                     if error is None:
@@ -176,7 +175,7 @@ class Bumper:
                 input("Press ENTER when you are ready to check again..")
                 continue
             
-            print("Hubble's active trades: %s" %n)
+            print("%s's active trades: %s" %(profile['username'].upper(),n))
             print('\nReading trades info..')
 
             trades = soup.find_all('div', attrs={'class': 'rlg-trade-display-container'})
@@ -404,7 +403,7 @@ class Bumper:
                         '\nSuccesfully bumped trade [%s].' %key,
                         'Status: %d' %result.status_code
                     )
-                    self.randsleep(10,21,'then refreshing trades and retrying')
+                    self.randsleep(10,21)
                 else:
                     print('\nSomething went wrong while bumping trade [%s].' %key)
                     self.randsleep(10,21,'then refreshing trades and retrying')
