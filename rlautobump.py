@@ -240,7 +240,7 @@ class Bumper:
                 if error is None:
                     print('No errors found. Status: %d.' %result.status_code)
                 elif 'This trade is on a 15 minute edit cooldown' in error:
-                    print('\nError:\n\tThis trade is already edited. Moving to the next one..')
+                    print('\nError:\n\tThis trade is already edited.')
                     return
             
                 print('All good! Currently on trade [%s].' %trade_id)
@@ -334,7 +334,7 @@ class Bumper:
                 print('\nAll trades alredy bumped.')
                 
                 posted = trade['posted']
-                sleep_time = 16 * 60 + randint(10,21)
+                sleep_time = 16 * 60 + randint(10,21) #16 min
                 if posted[1] == 'minute':
                     sleep_time -= int(posted[0]) * 60
                 else:
@@ -345,7 +345,7 @@ class Bumper:
                     'Expected refresh time: {}'.format(exp_time.time().strftime('%H:%M:%S'))
                     )
                 time.sleep(sleep_time)
-                return
+                return 0
             
             all_once_mode = 'all-once-mode' in sys.argv
             inverse_mode = 'inverse-mode' in sys.argv
@@ -365,7 +365,8 @@ class Bumper:
             try:
                 form_data = self.sniffTrade(key)
                 if not form_data:
-                    continue
+                    print('\nLooks like trades list changed. Refreshing trades and retrying.')
+                    return -1
                 urle = urllib.parse.urlencode(form_data)
                 index = urle.find('ownerItems')
                 urle = urle[:index] + urle[index:].replace('+','').replace('%27','%22')
@@ -391,34 +392,24 @@ class Bumper:
             except requests.exceptions.RequestException as e:
                 print(e)
                 self.requestExceptionInfo('bumpAll')
+                print('\nRefreshing trades and retrying.')
                 randSleep()
-                continue
+                return -1
             else:
-                soup = BeautifulSoup(result.content, 'html.parser')
-                popup = soup.find('div', attrs={'class': 'rlg-site-popup__content'})
-
-                try: #need fix
-                    title = popup.h1.string
-                    text = popup.p.string
-                    if title:
-                        print(
-                            '\nThere is an %s while bumping trade [%s].' %(title,key),
-                            '\nError message: %s' %text,
-                            '\nSleeping from 10 to 20 sec.'
-                            )
-                except AttributeError:
-                    if result.status_code == 200:
-                        print(
-                            '\nSuccesfully bumped trade [%s].' %key,
-                            'Status: %d' %result.status_code,
-                            '\nSleeping from 10 to 20 sec.',
-                        )
-                    else:
-                        print(
-                            '\nSomething went wrong while bumping trade [%s].' %key,
-                            'Sleeping from 10 to 20 sec.'
-                        )
-                randSleep()
+                if result.status_code == 200:
+                    print(
+                        '\nSuccesfully bumped trade [%s].' %key,
+                        'Status: %d' %result.status_code,
+                        '\nSleeping from 10 to 20 sec.',
+                    )
+                    randSleep()
+                else:
+                    print(
+                        '\nSomething went wrong while bumping trade [%s].' %key,
+                        '\nSleeping from 10 to 20 sec. Then refreshing trades.'
+                    )
+                    randSleep()
+                    return -1
 
     def start(self):
         if len(sys.argv) > 1 and sys.argv[1] not in self.allowed_modes:
@@ -440,8 +431,8 @@ class Bumper:
                     input("\nTrades updated. Press ENTER to start bumping..")
                     self.storage.updateStorage()
                     first_start = False
-                self.bumpAll()
-                if 'all-once-mode' in sys.argv:
+                status = self.bumpAll()
+                if 'all-once-mode' in sys.argv and status == 0:
                     print('\nAll in once mode finished bumping.')
                     return
         
