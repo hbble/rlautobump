@@ -8,7 +8,9 @@ Rocket League Garage Autobump Tool.
 
 3. Rename file `rename_to-data.json` to `data.json`.
 
-4. Install dependencies:
+4. Open file `data.json` and fill in your RL Garage account `email` and `password` at line `[4]` and `[5]`.
+
+5. Install dependencies:
   
     ### Manually:
     ```
@@ -23,7 +25,7 @@ Rocket League Garage Autobump Tool.
     pip install -r requirements.txt
     ```
 
-5. Hooray! You are ready to use this tool.
+6. Hooray! You are ready to use this tool.
 
 ## Using
 ```
