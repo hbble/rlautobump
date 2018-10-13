@@ -439,6 +439,11 @@ class Bumper:
         except KeyboardInterrupt:
             print('\nKeyboardInterrupt raised - forcing exit..')
             self.session.close()
+            print('\nClosing after:')
+            for n in reversed(range(1,4)):
+                print('\t%d' %n)
+                time.sleep(1)
+
 
 
 def main():
