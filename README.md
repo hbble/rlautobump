@@ -16,8 +16,10 @@ Rocket League Garage Autobump Tool.
     ```
     pip install requests beautifulsoup4
     ```
-    
-    OR
+    OR if that doesn't work:
+    ```
+    python -m pip install requests beautifulsoup4
+    ```
   
     ### From requirements.txt:
     ```
