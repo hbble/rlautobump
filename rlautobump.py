@@ -335,8 +335,13 @@ class Bumper:
         for key in reversed(list(trades.keys())):
             trade = trades[key]
 
+            all_once_mode = self.allowed_modes[0] in sys.argv
+            inverse_mode = self.allowed_modes[1] in sys.argv
+
             if not self.iseditable(trade):
                 print('\nAll trades alredy bumped.')
+                if all_once_mode:
+                    return 0
                 
                 posted = trade['posted']
                 sleep_time = 16 * 60 + randint(10,21) #16 min
@@ -352,8 +357,6 @@ class Bumper:
                 time.sleep(sleep_time)
                 return 0
             
-            all_once_mode = self.allowed_modes[0] in sys.argv
-            inverse_mode = self.allowed_modes[1] in sys.argv
             bumpable = trade['bump']
             if inverse_mode:
                 bumpable = not trade['bump']
@@ -403,7 +406,7 @@ class Bumper:
                         '\nSuccesfully bumped trade [%s].' %key,
                         'Status: %d' %result.status_code
                     )
-                    self.randsleep(10,21)
+                    self.randsleep(10,21,'')
                 else:
                     print('\nSomething went wrong while bumping trade [%s].' %key)
                     self.randsleep(10,21,'then refreshing trades and retrying')
