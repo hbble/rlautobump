@@ -40,7 +40,7 @@ This tool can be used in three different modes:
 Most common mode. Bumping all trades marked with `true` in `data.json`.
 
 To start this mode:
-1. Open Python shell and `cd to_repository_location`
+1. Open command prompt and `cd to_repository_location`
 
 2. Run: `python rlautobump.py`
 
@@ -49,10 +49,10 @@ To start this mode:
 4. Go back to started tool and press ENTER.
 
 #### All in Once mode
-This mode updates ALL trades only once. After completing it just stop working. Useful when you need to bump all trades to avoid auto deletion trades after 3 days inactivity.
+This mode updates ALL trades only once. After completing it just stop working. Useful when you need to bump all trades to avoid auto deletion trades after 14 days inactivity.
 
 To start this mode:
-1. Open Python shell and `cd to_repository_location`
+1. Open command prompt and `cd to_repository_location`
 
 2. Run: `python rlautobump.py all-once-mode`
 
@@ -62,7 +62,7 @@ To start this mode:
 Inversed version of **Regular** mode. Bumping all trades marked with `false` in `data.json`. Useful when you need to swap between selling/buying trades.
 
 To start this mode:
-1. Open Python shell and `cd to_repository_location`
+1. Open command prompt and `cd to_repository_location`
 
 2. Run: `python rlautobump.py inverse-mode`
 
