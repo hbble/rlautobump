@@ -150,8 +150,7 @@ class Bumper:
             profile = self.storage.data['profile']
             existed_trades = self.storage.data['trades']
 
-            print("\n" + "-"*30 + "\nLet's sniff some trades data!\n" + "-"*30)
-            print('Looking for some trades data..')
+            print("\n" + "-"*30 + "\nUpdating trades data!\n" + "-"*30)
             cookie = {'acceptedPrivacyPolicy': '2.0'}
             try:
                 result = self.session.get(profile['trades_url'], cookies=cookie)
@@ -339,20 +338,31 @@ class Bumper:
             inverse_mode = self.allowed_modes[1] in sys.argv
 
             if not self.iseditable(trade):
-                print('\nAll trades alredy bumped.')
                 if all_once_mode:
+                    print('\nAll in once mode finished bumping.')
                     return 0
-                
+                else:
+                    print('\nFinished bumping whole list. Refreshing time values..')
+                    #refreshing trades data
+                    self.storage.data["trades"] = self.sniffTrades()
+                    self.storage.uploadData()
+                    trade = self.storage.data['trades'][key]
+
                 posted = trade['posted']
-                sleep_time = 16 * 60 + randint(10,21) #16 min
-                if posted[1] == 'minute':
+                sleep_time = 16 * 60 + randint(10,21) #16 min+
+                
+                if self.iseditable(trade):
+                    print('\nThere is still editable trade(s).')
+                    return 1
+                elif posted[1] == 'minute':
                     sleep_time -= int(posted[0]) * 60
                 else:
                     sleep_time = 60
+                
                 exp_time = datetime.now() + timedelta(seconds=sleep_time)
                 print(
-                    'Refreshing after {:.1f} min sleep.'.format(sleep_time/60),
-                    'Expected refresh time: {}'.format(exp_time.time().strftime('%H:%M:%S'))
+                    'No trades to edit. Refreshing after {:.1f} min sleep.'.format(sleep_time/60),
+                    '\nExpected refresh time: {}'.format(exp_time.time().strftime('%H:%M:%S'))
                     )
                 time.sleep(sleep_time)
                 return 0
@@ -406,11 +416,17 @@ class Bumper:
                         '\nSuccesfully bumped trade [%s].' %key,
                         'Status: %d' %result.status_code
                     )
-                    self.randsleep(10,21,'')
+                    if all_once_mode:
+                        self.randsleep(10,21,'')
+                    else:
+                        self.randsleep(50, 71,'')
                 else:
                     print('\nSomething went wrong while bumping trade [%s].' %key)
                     self.randsleep(10,21,'then refreshing trades and retrying')
                     return -1
+        else:
+            print('\nFinished bumping whole list. Refreshing..')
+
 
     def start(self):
         if len(sys.argv) > 1 and sys.argv[1] not in self.allowed_modes:
@@ -425,16 +441,17 @@ class Bumper:
         try:
             self.login()
             self.storage.data["profile"] = self.sniffProfile()
+            status = None
             while(True):
-                self.storage.data["trades"] = self.sniffTrades()
-                self.storage.uploadData()
+                if status != 1:
+                    self.storage.data["trades"] = self.sniffTrades()
+                    self.storage.uploadData()
                 if first_start and not self.allowed_modes[0] in sys.argv:
                     input("\nTrades updated. Press ENTER to start bumping..")
                     self.storage.updateStorage()
                     first_start = False
                 status = self.bumpAll()
                 if self.allowed_modes[0] in sys.argv and status == 0:
-                    print('\nAll in once mode finished bumping.')
                     return
         
         except KeyboardInterrupt:
