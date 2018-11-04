@@ -69,3 +69,10 @@ To start this mode:
 3. Wait untill `Trades updated. Press ENTER to start bumping..` message appears. Open file `data.json` if you want to change `bump` values for your trades. Save it.
 
 4. Go back to started tool and press ENTER.
+
+## Disclaimer
+
+The author and any contributors associated with this project are not resposible for the consequences that may occur from the use of this tool.
+
+Users of this tool do so entirely at their own risk - abusing this tool could get you permanently banned from Rocket League Garage.
+
