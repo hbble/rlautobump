@@ -1,5 +1,5 @@
-# RL Garage Autobump Tool
-Rocket League Garage Autobump Tool.
+# RL Garage Autobump Tool (Outdated)
+Rocket League Garage Autobump Tool. Not working now. Can be used as an example project.
 
 ## Installation (Locally)
 1. Make sure you have installed [Python 3](https://www.python.org/downloads/) on your machine.
